@@ -56,4 +56,9 @@ public:
 	int m_Re_width;
 	int m_Re_height;
 	int m_Re_size;
+
+
+	void OnUpSampling();
+	void OnQuantization();
+	void OnHistoStretch();
 };

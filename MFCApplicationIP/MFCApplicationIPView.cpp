@@ -29,6 +29,9 @@ BEGIN_MESSAGE_MAP(CMFCApplicationIPView, CView)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CMFCApplicationIPView::OnFilePrintPreview)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
+	ON_COMMAND(ID_UP_SAMPLING, &CMFCApplicationIPView::OnUpSampling)
+	ON_COMMAND(ID_QUANTIZATION, &CMFCApplicationIPView::OnQuantization)
+	ON_COMMAND(ID_HISTO_STRETCH, &CMFCApplicationIPView::OnHistoStretch)
 END_MESSAGE_MAP()
 
 // CMFCApplicationIPView 생성/소멸
@@ -143,3 +146,36 @@ CMFCApplicationIPDoc* CMFCApplicationIPView::GetDocument() const // 디버그되
 
 
 // CMFCApplicationIPView 메시지 처리기
+
+void CMFCApplicationIPView::OnUpSampling()
+{
+	// TODO: Add your command handler code here
+	CMFCApplicationIPDoc* pDoc = GetDocument(); // Doc 클래스 참조
+	ASSERT_VALID(pDoc);
+
+	pDoc->OnUpSampling(); // Doc 클래스에 OnUpSampling 함수 호출
+
+	Invalidate(TRUE);
+}
+
+void CMFCApplicationIPView::OnQuantization()
+{
+	// TODO: Add your command handler code here
+	CMFCApplicationIPDoc* pDoc = GetDocument(); // Doc 클래스 참조
+	ASSERT_VALID(pDoc);
+
+	pDoc->OnQuantization(); // Doc 클래스에 OnQuantization 함수 호출
+
+	Invalidate(TRUE);
+}
+
+void CMFCApplicationIPView::OnHistoStretch()
+{
+	CMFCApplicationIPDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	pDoc->OnHistoStretch();
+
+	Invalidate(TRUE);
+
+}

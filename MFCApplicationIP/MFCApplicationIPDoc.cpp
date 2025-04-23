@@ -11,6 +11,8 @@
 #endif
 
 #include "MFCApplicationIPDoc.h"
+#include "CUpSampleDlg.h"
+#include "CQuantizationDlg.h" 
 
 #include <propkey.h>
 
@@ -176,5 +178,112 @@ BOOL CMFCApplicationIPDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	File.Close(); // 파일 닫기
 
 	return TRUE;
+
+}
+
+void CMFCApplicationIPDoc::OnUpSampling()
+{
+	int i, j;
+
+	CUpSampleDlg dlg;
+	if (dlg.DoModal() == IDOK) { // DoModal 대화상자의 활성화 여부
+		m_Re_height = m_height * dlg.m_UpSampleRate;
+		// 확대 영상의 세로 길이 계산
+		m_Re_width = m_width * dlg.m_UpSampleRate;
+		// 확대 영상의 가로 길이 계산
+		m_Re_size = m_Re_height * m_Re_width;
+		// 확대 영상의 크기 계산
+		m_OutputImage = new unsigned char[m_Re_size];
+		// 확대 영상을 위한 메모리 할당
+
+		for (i = 0; i < m_Re_size; i++)
+			m_OutputImage[i] = 0; // 초기화
+
+		for (i = 0; i < m_height; i++) {
+			for (j = 0; j < m_width; j++) {
+				m_OutputImage[i * dlg.m_UpSampleRate * m_Re_width +
+					dlg.m_UpSampleRate * j] = m_InputImage[i * m_width + j];
+			} // 재배치하여 영상 확대
+		}
+	}
+
+}
+
+
+
+void CMFCApplicationIPDoc::OnQuantization()
+{
+	CQuantizationDlg dlg;
+	if (dlg.DoModal() == IDOK)
+		// 양자화 비트 수를 결정하는 대화상자의 활성화 여부
+	{
+		int i, j, value, LEVEL;
+		double HIGH, * TEMP;
+
+		m_Re_height = m_height;
+		m_Re_width = m_width;
+		m_Re_size = m_Re_height * m_Re_width;
+
+		m_OutputImage = new unsigned char[m_Re_size];
+		// 양자화 처리된 영상을 출력하기 위한 메모리 할당
+
+		TEMP = new double[m_size];
+		// 입력 영상 크기(m_size)와 동일한 메모리 할당
+
+		LEVEL = 256; // 입력 영상의 양자화 단계(28=256)
+		HIGH = 256.;
+
+		value = (int)pow(2, dlg.m_QuantBit);
+		// 양자화 단계 결정(예 : 24=16)
+
+		for (i = 0; i < m_size; i++) {
+			for (j = 0; j < value; j++) {
+				if (m_InputImage[i] >= (LEVEL / value) * j &&
+					m_InputImage[i] < (LEVEL / value) * (j + 1)) {
+					TEMP[i] = (double)(HIGH / value) * j; // 양자화 수행
+				}
+			}
+		}
+		for (i = 0; i < m_size; i++) {
+			m_OutputImage[i] = (unsigned char)TEMP[i];
+			// 결과 영상 생성
+		}
+	}
+
+}
+
+void CMFCApplicationIPDoc::OnHistoStretch()
+{
+	int i;
+	unsigned char LOW, HIGH, MAX, MIN;
+
+	m_Re_height = m_height;
+	m_Re_width = m_width;
+	m_Re_size = m_Re_height * m_Re_width;
+
+	LOW = 0;
+	HIGH = 255;
+
+	MIN = m_InputImage[0]; // 최소값을 찾기 위한 초기값
+	MAX = m_InputImage[0]; // 최대값을 찾기 위한 초기값
+
+	// 입력 영상의 최소값 찾기
+	for (i = 0; i < m_size; i++) {
+		if (m_InputImage[i] < MIN)
+			MIN = m_InputImage[i];
+	}
+
+	// 입력 영상의 최대값 찾기
+	for (i = 0; i < m_size; i++) {
+		if (m_InputImage[i] > MAX)
+			MAX = m_InputImage[i];
+	}
+
+	m_OutputImage = new unsigned char[m_Re_size];
+
+	// 히스토그램 stretch
+	for (i = 0; i < m_size; i++)
+		m_OutputImage[i] = (unsigned char)((m_InputImage[i] -
+			MIN) * HIGH / (MAX - MIN));
 
 }
